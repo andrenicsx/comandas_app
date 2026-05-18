@@ -1,21 +1,18 @@
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Avatar, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip, Avatar, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Chip } from '@mui/material';
 import { Dashboard, People, Group, RestaurantMenu, Receipt, PointOfSale, Logout, AccountCircle, Menu as MenuIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { useState } from 'react';
+import UserProfile from './UserProfile';
 
 const Navbar = () => {
 
   // useNavigate é um hook do React Router que permite programaticamente navegar entre rotas
   const navigate = useNavigate();
-
-  // useAuth é um hook personalizado que fornece acesso ao contexto de autenticação
-  // logouut é uma função que realiza o logout do usuário
-  // isAuthenticated é um booleano que indica se o usuário está autenticado ou não
-  const { isAuthenticated, logout } = useAuth();
-
-  // Estado para controlar a abertura do drawer mobile
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  // useAuth é um hook personalizado contexto de autenticação - logout é uma função logout do usuário - isAuthenticated indica se o usuário está autenticado ou não - user contém os dados do usuário logado
+  const { isAuthenticated, logout, user } = useAuth();
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false); // Estado para controlar a abertura do drawer mobile
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null); // Estado para controlar a abertura do menu de perfil
 
   // Chama a função de logout do contexto de autenticação
   const handleLogout = () => {
@@ -36,8 +33,18 @@ const Navbar = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
-  // Componente do drawer mobile
-  // parte 1 - copiar da próxima página
+  // Handlers para abrir o menu de perfil
+  const handleProfileMenuOpen = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+  };
+
+  // Handler para fechar o menu de perfil
+  const handleProfileMenuClose = () => {
+    setProfileAnchorEl(null);
+  };
+
+
+  // PARTE 1 - Componente do drawer mobile
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'left', width: 250 }}>
       <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
@@ -66,8 +73,9 @@ const Navbar = () => {
       </List>
     </Box>
   );
-  // Componente do navbar
-  // parte 2 - copiar da próxima página
+
+  // PARTE 2 - Componente do navbar
+  // PARTE 2 - Componente do navbar
   return (
     <AppBar position="sticky" elevation={2}>
       <Toolbar sx={{ minHeight: 64, px: { xs: 1, sm: 2 } }}>
@@ -94,8 +102,6 @@ const Navbar = () => {
         {isAuthenticated && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
 
-            {/*  parte 3 - copiar menus da próxima página */}
-
             {/* Menu Desktop - sm e acima */}
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
               {menuItems.map((item) => (
@@ -103,23 +109,19 @@ const Navbar = () => {
                   <Button
                     color="inherit"
                     onClick={() => navigate(item.path)}
-                    sx={{
-                      minWidth: 'auto', px: 1.5, py: 1, borderRadius: 2, alignItems: 'center', gap: 0.5,
-                      '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
-                    }}
+                    sx={{ minWidth: 'auto', px: 1.5, py: 1, borderRadius: 2, alignItems: 'center', gap: 0.5, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
                   >
                     {item.icon}
                     <Typography variant="body2" sx={{ ml: 0.5 }}>{item.label}</Typography>
                   </Button>
                 </Tooltip>
               ))}
-              <Tooltip title="Perfil" arrow>
-                <IconButton color="inherit">
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }}>
-                    <AccountCircle />
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
+
+              {/* Trocado a Letra "A" pela imagem /andre.jpg */}
+              <IconButton color="inherit" onClick={handleProfileMenuOpen}>
+                <Avatar src="/andre.jpg" sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }} />
+              </IconButton>
+
               <Tooltip title="Sair" arrow>
                 <IconButton
                   color="inherit" onClick={handleLogout} sx={{ '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.1)' } }}
@@ -131,20 +133,16 @@ const Navbar = () => {
 
             {/* Menu Mobile - xs e abaixo */}
             <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 1 }}>
-              <Tooltip title="Perfil" arrow>
-                <IconButton color="inherit">
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }}>
-                    <AccountCircle />
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
+              {/* Trocado também no Mobile */}
+              <IconButton color="inherit" onClick={handleProfileMenuOpen}>
+                <Avatar src="/andre.jpg" sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }} />
+              </IconButton>
               <IconButton
                 color="inherit" onClick={handleDrawerToggle} sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
               >
                 <MenuIcon />
               </IconButton>
             </Box>
-
           </Box>
         )}
       </Toolbar>
@@ -153,15 +151,17 @@ const Navbar = () => {
       <Drawer
         variant="temporary" open={mobileDrawerOpen} onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
+          keepMounted: true,
         }}
         sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 250 }, }}
       >
         {drawer}
       </Drawer>
+
+      {/* Menu de Perfil Dropdown */}
+      <UserProfile anchorEl={profileAnchorEl} onClose={handleProfileMenuClose} />
     </AppBar>
   );
-
-};
+}
 
 export default Navbar;

@@ -1,39 +1,29 @@
 import { useForm, Controller } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import { TextField, Button, Box, Typography, Paper, Avatar } from "@mui/material";
-import { RestaurantMenu as MenuIcon } from '@mui/icons-material';
 import useValidationRules from "../../hooks/useValidationRules";
 
 const LoginForm = () => {
-
   const validationRules = useValidationRules();
-  // hook para gerenciar o formulário
-  // useForm é usado para gerenciar o estado do formulário, como os valores dos campos e as validações.
-  // retorna um objeto com várias propriedades e métodos, como control, handleSubmit, reset e formState.
-  // register é usado para registrar os campos do formulário no gerenciador do react-hook-form.
-  // handleSubmit é uma função que lida com o envio do formulário e valida os dados.
-  // formState é um objeto que contém o estado do formulário, como erros de validação e se o formulário está sendo enviado.
   const { control, handleSubmit, formState: { errors } } = useForm();
-
-  // useAuth é um hook personalizado que fornece acesso ao contexto de autenticação
-  // login é uma função que realiza o login do usuário
   const { login } = useAuth();
 
-  // função que chama o login do AuthContext ao enviar o formulário
   const onSubmit = (data) => {
     const { cpf, senha } = data;
     login(cpf, senha);
   };
 
-  // renderização do componente
-  // renderização do componente – colar na parte marcada da página anterior
   return (
     <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
       <Paper elevation={8} sx={{ p: 4, maxWidth: 400, width: '100%', borderRadius: 3, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)' }}>
+
+        {/* Sua Foto Redonda no Topo */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Avatar sx={{ width: 64, height: 64, bgcolor: '#f59e0b', mx: 'auto', mb: 2 }}>
-            <MenuIcon sx={{ fontSize: 32 }} />
-          </Avatar>
+          <Avatar
+            src="/andre.jpg"
+            alt="André Nícolas"
+            sx={{ width: 90, height: 90, mx: 'auto', mb: 2, border: '3px solid #f59e0b', boxShadow: 3 }}
+          />
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', mb: 1 }}>
             Comandas do Zé
           </Typography>
@@ -77,4 +67,5 @@ const LoginForm = () => {
     </Box>
   );
 };
+
 export default LoginForm;

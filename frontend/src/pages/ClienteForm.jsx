@@ -7,6 +7,8 @@ import IMaskInputWrapper from '../components/common/IMaskInputWrapper';// import
 import { createCliente, updateCliente, getClienteById, checkCpfExists } from '../services/clienteService';
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import { USER_GROUPS } from '../constants/userGroups';
 
 const ClienteForm = () => {
 
@@ -17,9 +19,13 @@ const ClienteForm = () => {
 
   const [showCpfModal, setShowCpfModal] = useState(false);
   const [cpfDuplicado, setCpfDuplicado] = useState(null);
+  const [loadingData, setLoadingData] = useState(false);
 
   // useNavigate é usado para navegar entre páginas.
   const navigate = useNavigate();
+
+  // Hook de autenticação
+  const { user } = useAuth();
 
   // useForm: usado para gerenciar o estado do formulário, como os valores dos campos e as validações.
   // O useForm retorna um objeto com várias propriedades e métodos, como control, handleSubmit, reset e formState.
@@ -49,19 +55,35 @@ const ClienteForm = () => {
   // A função de efeito é executada após a renderização do componente e
   // pode retornar uma função de limpeza que é executada antes da próxima execução do efeito ou da desmontagem do componente.
   // A dependência id é usada para buscar os dados do cliente a ser editado ou visualizado.
+
+  // Efeito para carregar dados do cliente e verificar permissões
   useEffect(() => {
-    if (id) {
-      // define uma função assíncrona para buscar os dados do cliente pelo id.
-      const fetchCliente = async () => {
-        const data = await getClienteById(id);
-        // O reset é uma função do react-hook-form que redefine os valores do formulário,
-        // no caso, para os valores retornados da consulta.
-        reset(data);
-      };
-      // Chama a função fetchCliente para buscar os dados do cliente.
-      fetchCliente();
+    // Se não for modo de apenas visualização e o usuário não for Administrador (1) nem Caixa (3), barra o acesso
+    if (opr !== 'view' && user?.grupo !== USER_GROUPS.ADMINISTRADOR && user?.grupo !== USER_GROUPS.CAIXA) {
+      showSnackbar('Acesso negado: Apenas administradores e caixas podem cadastrar ou editar clientes.', 'warning');
+      navigate('/clientes');
+      return;
     }
-  }, [id, reset]);
+
+    const loadCliente = async () => {
+      if (id) {
+        try {
+          setLoadingData(true);
+          const data = await getClienteById(id); // Pesquisa cliente pelo id
+          reset(data); // Preenche formulário com dados existentes
+        } catch (error) {
+          showSnackbar('Erro ao carregar cliente', 'error');
+          navigate('/clientes');
+        } finally {
+          setLoadingData(false);
+        }
+      } else {
+        setLoadingData(false);
+      }
+    };
+
+    loadCliente();
+  }, [id, opr, user, navigate]);
 
   const handleCpfBlur = async () => {
 

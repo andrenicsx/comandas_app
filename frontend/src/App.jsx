@@ -5,6 +5,7 @@ import { theme } from "./theme"; // estilos globais
 import { ToastContainer } from 'react-toastify';
 import Navbar from "./components/common/Navbar"; // componente reutilizável de navegação
 import AppRoutes from "./routes/Router"; // rotas da aplicação
+import SnackbarGlobal from "./components/common/Snackbar";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             {/* AppRoutes é o componente que contém as rotas da aplicação, definindo quais componentes devem ser renderizados em cada rota */}
             <AppRoutes />
           </Container>
+          <SnackbarGlobal />
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

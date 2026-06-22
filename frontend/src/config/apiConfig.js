@@ -22,9 +22,9 @@ const API_ENDPOINTS = {
     DELETE: '/cliente/:id', // DELETE - remover cliente
   },
   PRODUTO: {
-    PUBLIC: '/produto/public', // GET - listar produtos públicos
+    PUBLIC: '/produto/publico', // GET - listar produtos públicos
     LIST: '/produto/', // GET - listar produtos
-    GET: '/produto/:id', // GET - buscar produto
+    GET: '/produto/:id', // GET - bu5scar produto
     CREATE: '/produto/', // POST - criar produto
     UPDATE: '/produto/:id', // PUT - atualizar produto
     DELETE: '/produto/:id', // DELETE - remover produto
@@ -42,10 +42,10 @@ const API_ENDPOINTS = {
     REMOVE_ITEM: '/comanda/produto/:id', // DELETE - remover produto
   },
   RECEBIMENTO: {
-    DASHBOARD: '/recebimento/dashboard', // GET - dashboard comandas abertas
-    DETALHE: '/recebimento/comandas/detalhe/:ids', // GET - detalhar comandas
-    RECEBER: '/recebimento/completo', // POST - processar recebimento
-    COMPROVANTE: '/recebimento/comprovante/:id', // GET - gerar comprovante
+    DASHBOARD: '/recebimento/dashboard',
+    DETALHE: '/recebimento/comandas/detalhe',
+    RECEBER: '/recebimento/',
+    COMPROVANTE: '/recebimento/comprovante',
   },
   AUDITORIA: {
     LIST: '/auditoria', // GET - listar auditorias

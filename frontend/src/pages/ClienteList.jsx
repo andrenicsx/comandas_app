@@ -11,6 +11,9 @@ import { getClientes, deleteCliente } from '../services/clienteService';
 import { toast } from 'react-toastify';
 // useTheme para acessar o tema do Material-UI.
 import { useTheme } from '@mui/material/styles';
+import { USER_GROUPS } from '../constants/userGroups';
+import ActionButtons from "../components/common/ActionButtons";
+import { useAuth } from '../context/AuthContext';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,6 +22,35 @@ function ClienteList() {
 
   // O useNavigate é um hook que permite navegar programaticamente entre as rotas da aplicação
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleView = (cliente) =>
+    navigate(`/cliente/view/${cliente.id}`);
+
+  const handleEdit = (cliente) =>
+    navigate(`/cliente/edit/${cliente.id}`);
+
+  const handleDelete = async (cliente) => {
+    const confirmar = window.confirm(
+      `Tem certeza que deseja excluir o cliente "${cliente.nome}"?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await deleteCliente(cliente.id);
+
+      setClientes(
+        clientes.filter(c => c.id !== cliente.id)
+      );
+
+      toast.success('Cliente excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      toast.error('Erro ao excluir cliente.');
+    }
+  };
+
 
   // Hook para detectar o tamanho da telaAdd commentMore actions
   // theme: Obtém o tema do Material-UI.
@@ -89,7 +121,7 @@ function ClienteList() {
       startY: 20,
       head: [['ID', 'Nome', 'CPF', 'Telefone']],
       body: clientes.map(c => [
-        c.id_cliente,
+        c.id,
         c.nome,
         c.cpf,
         c.telefone
@@ -129,8 +161,8 @@ function ClienteList() {
 
         <TableBody>
           {clientes.map((cliente) => (
-            <TableRow key={cliente.id_cliente}>
-              <TableCell>{cliente.id_cliente}</TableCell>
+            <TableRow key={cliente.id}>
+              <TableCell>{cliente.id}</TableCell>
               <TableCell>{cliente.nome}</TableCell>
               <TableCell>{cliente.cpf}</TableCell>
               {/* conforme o tamanho da tela, define o que renderizar */}
@@ -140,17 +172,12 @@ function ClienteList() {
                 </>
               )}
               <TableCell>
-                {/* executa a rota, passando o opr view e o id selecionado */}
-                <IconButton onClick={() => navigate(`/cliente/view/${cliente.id_cliente}`)}>
-                  <Visibility color="primary" />
-                </IconButton>
-                {/* executa a rota, passando o opr edit e o id selecionado */}
-                <IconButton onClick={() => navigate(`/cliente/edit/${cliente.id_cliente}`)}>
-                  <Edit color="secondary" />
-                </IconButton>
-                <IconButton onClick={() => handleDeleteClick(cliente)}>
-                  <Delete color="error" />
-                </IconButton>
+                <ActionButtons
+                  item={cliente}
+                  onView={handleView}
+                  onEdit={user?.grupo === USER_GROUPS.ADMINISTRADOR ? handleEdit : null}
+                  onDelete={user?.grupo === USER_GROUPS.ADMINISTRADOR ? handleDelete : null}
+                />
               </TableCell>
             </TableRow>
           ))}

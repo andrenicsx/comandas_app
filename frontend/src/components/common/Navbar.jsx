@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import { useState } from 'react';
 import UserProfile from './UserProfile';
+import { USER_GROUPS } from '../../constants/userGroups';
 
 const Navbar = () => {
 
@@ -22,11 +23,11 @@ const Navbar = () => {
   // Itens do menu com ícones e rotas
   const menuItems = [
     { label: 'Dashboard', icon: <Dashboard />, path: '/home' },
-    { label: 'Funcionários', icon: <People />, path: '/funcionarios' },
+    ...(user?.grupo === USER_GROUPS.ADMINISTRADOR ? [{ label: 'Funcionários', icon: <People />, path: '/funcionarios' }] : []),
     { label: 'Clientes', icon: <Group />, path: '/clientes' },
     { label: 'Produtos', icon: <RestaurantMenu />, path: '/produtos' },
     { label: 'Comandas', icon: <Receipt />, path: '/comandas' },
-    { label: 'Caixa', icon: <PointOfSale />, path: '/caixa' }
+    ...(user?.grupo === USER_GROUPS.ADMINISTRADOR || user?.grupo === USER_GROUPS.CAIXA ? [{ label: 'Caixa', icon: <PointOfSale />, path: '/caixa' }] : []),
   ];
 
   const handleDrawerToggle = () => {
@@ -75,7 +76,6 @@ const Navbar = () => {
   );
 
   // PARTE 2 - Componente do navbar
-  // PARTE 2 - Componente do navbar
   return (
     <AppBar position="sticky" elevation={2}>
       <Toolbar sx={{ minHeight: 64, px: { xs: 1, sm: 2 } }}>
@@ -102,6 +102,9 @@ const Navbar = () => {
         {isAuthenticated && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
 
+
+            {/* copiar menus da próxima página */}
+
             {/* Menu Desktop - sm e acima */}
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
               {menuItems.map((item) => (
@@ -117,11 +120,12 @@ const Navbar = () => {
                 </Tooltip>
               ))}
 
-              {/* Trocado a Letra "A" pela imagem /andre.jpg */}
+              {/* Menu de perfil - recebe user de useAuth e mostra a primeira letra do nome */}
               <IconButton color="inherit" onClick={handleProfileMenuOpen}>
-                <Avatar src="/andre.jpg" sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }} />
+                <Avatar sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }}>
+                  {user?.nome ? user.nome.charAt(0).toUpperCase() : <AccountCircle />}
+                </Avatar>
               </IconButton>
-
               <Tooltip title="Sair" arrow>
                 <IconButton
                   color="inherit" onClick={handleLogout} sx={{ '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.1)' } }}
@@ -133,9 +137,11 @@ const Navbar = () => {
 
             {/* Menu Mobile - xs e abaixo */}
             <Box sx={{ display: { xs: 'flex', sm: 'none' }, alignItems: 'center', gap: 1 }}>
-              {/* Trocado também no Mobile */}
+              {/* Menu de perfil - recebe user de useAuth e mostra a primeira letra do nome */}
               <IconButton color="inherit" onClick={handleProfileMenuOpen}>
-                <Avatar src="/andre.jpg" sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }} />
+                <Avatar sx={{ width: 32, height: 32, bgcolor: '#f59e0b' }}>
+                  {user?.nome ? user.nome.charAt(0).toUpperCase() : <AccountCircle />}
+                </Avatar>
               </IconButton>
               <IconButton
                 color="inherit" onClick={handleDrawerToggle} sx={{ '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
@@ -151,7 +157,7 @@ const Navbar = () => {
       <Drawer
         variant="temporary" open={mobileDrawerOpen} onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true,
+          keepMounted: true, // Better open performance on mobile.
         }}
         sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 250 }, }}
       >
@@ -162,6 +168,6 @@ const Navbar = () => {
       <UserProfile anchorEl={profileAnchorEl} onClose={handleProfileMenuClose} />
     </AppBar>
   );
-}
+};
 
 export default Navbar;

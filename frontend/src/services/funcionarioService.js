@@ -1,33 +1,49 @@
+import { API_ENDPOINTS } from '../config/apiConfig';
+import api from './api';
+
 export const getFuncionarios = async () => {
-  return [];
+  const response = await api.get(API_ENDPOINTS.FUNCIONARIO.LIST);
+  return response.data;
 };
 
 export const getFuncionarioById = async (id) => {
-  return {
-    id_funcionario: id,
-    nome: "André",
-    cpf: "12345678902",
-    matricula: "001",
-    telefone: "49999999999",
-    senha: "123456",
-    grupo: "1"
-  };
+  const endpoint = API_ENDPOINTS.FUNCIONARIO.GET.replace(':id', id);
+
+  const response = await api.get(endpoint);
+  return response.data;
 };
 
-export const deleteFuncionario = async () => {
-  return true;
+export const deleteFuncionario = async (id) => {
+  const endpoint = API_ENDPOINTS.FUNCIONARIO.DELETE.replace(':id', id);
+
+  const response = await api.delete(endpoint);
+  return response.data;
 };
 
 export const createFuncionario = async (data) => {
-  return { id: 1 };
+  const response = await api.post(
+    API_ENDPOINTS.FUNCIONARIO.CREATE,
+    data
+  );
+
+  return response.data;
 };
 
 export const updateFuncionario = async (id, data) => {
-  return { id };
+  const endpoint = API_ENDPOINTS.FUNCIONARIO.UPDATE.replace(':id', id);
+
+  const response = await api.put(endpoint, data);
+
+  return response.data;
 };
 
-export const checkCpfExists = async () => {
-  return {
-    exists: false
-  };
+export const checkCpfExists = async (cpf) => {
+  const response = await api.get(
+    API_ENDPOINTS.FUNCIONARIO.LIST,
+    {
+      params: { cpf }
+    }
+  );
+
+  return response.data.length > 0;
 };

@@ -8,6 +8,9 @@ import IMaskInputWrapper from '../components/common/IMaskInputWrapper';
 import { createFuncionario, updateFuncionario, getFuncionarioById, checkCpfExists } from '../services/funcionarioService';
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { GROUP_OPTIONS, USER_GROUPS } from '../constants/userGroups';
+import { useAuth } from '../context/AuthContext';
+import showSnackbar from '../utils/snackbar';
 
 const FuncionarioForm = () => {
 
@@ -18,9 +21,13 @@ const FuncionarioForm = () => {
 
   const [showCpfModal, setShowCpfModal] = useState(false);
   const [cpfDuplicado, setCpfDuplicado] = useState(null);
+  const [loadingData, setLoadingData] = useState(false);
 
   // useNavigate é usado para navegar entre páginas.
   const navigate = useNavigate();
+
+  // Hook de autenticação
+  const { user } = useAuth();
 
   // useForm: usado para gerenciar o estado do formulário, como os valores dos campos e as validações.
   // O useForm retorna um objeto com várias propriedades e métodos, como control, handleSubmit, reset e formState.
@@ -48,20 +55,35 @@ const FuncionarioForm = () => {
   // Ele recebe uma função de efeito e um array de dependências como argumentos.
   // A função de efeito é executada após a renderização do componente e
   // pode retornar uma função de limpeza que é executada antes da próxima execução do efeito ou da desmontagem do componente.
-  // A dependência id é usada para buscar os dados do funcionário a ser editado ou visualizado.
+
+  // Efeito para carregar dados do funcionário e verificar permissões
   useEffect(() => {
-    if (id) {
-      // define uma função assíncrona para buscar os dados do funcionário pelo id.
-      const fetchFuncionario = async () => {
-        const data = await getFuncionarioById(id);
-        // O reset é uma função do react-hook-form que redefine os valores do formulário,
-        // no caso, para os valores retornados da consulta.
-        reset(data);
-      };
-      // Chama a função fetchFuncionario para buscar os dados do funcionário.
-      fetchFuncionario();
+    // Se não for modo de apenas visualização e o usuário não for administrador, barra o acesso
+    if (opr !== 'view' && user?.grupo !== USER_GROUPS.ADMINISTRADOR) {
+      showSnackbar('Acesso negado: Apenas administradores podem cadastrar ou editar funcionários.', 'warning');
+      navigate('/home');
+      return;
     }
-  }, [id, reset]);
+
+    const loadFuncionario = async () => {
+      if (id) {
+        try {
+          setLoadingData(true);
+          const data = await getFuncionarioById(id); // Pesquisa funcionário pelo id
+          reset(data); // Preenche formulário com dados existentes
+        } catch (error) {
+          showSnackbar('Erro ao carregar funcionário', 'error');
+          navigate('/funcionarios');
+        } finally {
+          setLoadingData(false);
+        }
+      } else {
+        setLoadingData(false);
+      }
+    };
+
+    loadFuncionario();
+  }, [id, opr, user, navigate]);
 
   const handleCpfBlur = async () => {
 
@@ -72,7 +94,7 @@ const FuncionarioForm = () => {
     try {
       const { exists, funcionario } = await checkCpfExists(cpf);
       const isEditing = !!id;
-      const isSameFuncionario = isEditing && funcionario?.id_funcionario === parseInt(id);
+      const isSameFuncionario = isEditing && funcionario?.id === parseInt(id);
 
       if (exists && !isSameFuncionario) {
         setCpfDuplicado(funcionario);
@@ -85,12 +107,12 @@ const FuncionarioForm = () => {
   };
 
   const handleViewDuplicate = () => {
-    navigate(`/funcionario/view/${cpfDuplicado.id_funcionario}`);
+    navigate(`/funcionario/view/${cpfDuplicado.id}`);
     setShowCpfModal(false);
   };
 
   const handleEditDuplicate = () => {
-    navigate(`/funcionario/edit/${cpfDuplicado.id_funcionario}`);
+    navigate(`/funcionario/edit/${cpfDuplicado.id}`);
     setShowCpfModal(false);
   };
 

@@ -1,35 +1,39 @@
+import { API_ENDPOINTS } from '../config/apiConfig';
+import api from './api';
+
 export const createCliente = async (data) => {
-  return { id: 1, ...data };
+  const response = await api.post(API_ENDPOINTS.CLIENTE.CREATE, data);
+  return response.data;
 };
 
 export const updateCliente = async (id, data) => {
-  return { id, ...data };
+  const endpoint = API_ENDPOINTS.CLIENTE.UPDATE.replace(':id', id);
+  const response = await api.put(endpoint, data);
+  return response.data;
 };
 
 export const getClienteById = async (id) => {
-  return {
-    id_cliente: id,
-    nome: "André",
-    cpf: "12345678902",
-    telefone: "49999999999"
-  };
+  const endpoint = API_ENDPOINTS.CLIENTE.GET.replace(':id', id);
+  const response = await api.get(endpoint);
+  return response.data;
 };
 
-export const checkCpfExists = async () => {
-  return { exists: false };
+
+export const checkCpfExists = async (cpf) => {
+  const response = await api.get(API_ENDPOINTS.CLIENTE.LIST, {
+    params: { cpf }
+  });
+
+  return response.data.length > 0;
 };
 
 export const deleteCliente = async (id) => {
-  return true;
+  const endpoint = API_ENDPOINTS.CLIENTE.DELETE.replace(':id', id);
+  const response = await api.delete(endpoint);
+  return response.data;
 };
 
 export const getClientes = async () => {
-  return [
-    {
-      id_cliente: 1,
-      nome: "André",
-      cpf: "12345678902",
-      telefone: "49999999999"
-    }
-  ];
+  const response = await api.get(API_ENDPOINTS.CLIENTE.LIST);
+  return response.data;
 };
